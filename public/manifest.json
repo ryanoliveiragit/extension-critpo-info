@@ -7,6 +7,10 @@
       "default_popup": "index.html",
       "default_title": "Extension"
     },
+    "icons": {
+      "48": "/favico1.png",
+      "128": "/favico1.png"
+    },
     "content_security_policy": {
       "extension_pages": "script-src 'self'; object-src 'self';"
     }

@@ -1,68 +1,102 @@
 import { useState, useEffect } from "react";
-import { Carousel, CarouselContent } from "@/components/ui/carousel";
 import { Box } from "./box/box";
 import { Star } from "lucide-react";
-
+import { getCryptoData } from "@/api/get-tickets-id";
 interface FavoritedCryptos {
   name: string;
   image: string;
   price: number;
   variant: string;
+  tag: string;
 }
 
 function CryptoComponent() {
   const [cryptoList, setCryptoList] = useState<FavoritedCryptos[]>([]);
-
-  // Função para carregar as criptos salvas
   const loadSavedCryptos = () => {
     const savedCryptos = localStorage.getItem("favoritedCoins");
     if (savedCryptos) {
-      setCryptoList(JSON.parse(savedCryptos));
+      return JSON.parse(savedCryptos) as FavoritedCryptos[];
     }
+    return [];
+  };
+
+  const handleRemove = (index: number) => {
+    const updatedList = cryptoList.filter((_, i) => i !== index);
+    setCryptoList(updatedList);
+    localStorage.setItem("favoritedCoins", JSON.stringify(updatedList));
+    window.dispatchEvent(new Event("cryptoListUpdated"));
   };
 
   useEffect(() => {
-    // Carregar as criptos ao montar o componente
-    loadSavedCryptos();
+    const fetchCryptoData = async () => {
+      const savedCryptos = loadSavedCryptos();
 
-    // Adicionar um listener para atualizar as criptos quando o evento for emitido
-    const handleStorageUpdate = () => {
-      loadSavedCryptos();
+      if (savedCryptos.length > 0) {
+        const updatedList = await Promise.all(
+          savedCryptos.map(async (crypto) => {
+            try {
+              const response = await getCryptoData(crypto.tag);
+              const apiData = response.data[crypto.tag];
+
+              return {
+                ...crypto,
+                price: apiData?.quote?.USD.price ?? crypto.price,
+                variant: apiData?.quote?.USD.percent_change_24h.toFixed(2) ?? crypto.variant,
+              };
+            } catch (error) {
+              console.error(`Erro ao buscar dados para ${crypto.tag}:`, error);
+              return crypto;
+            }
+          })
+        );
+
+        setCryptoList(updatedList);
+      }
     };
 
-    window.addEventListener("cryptoListUpdated", handleStorageUpdate);
-
-    // Remover o listener ao desmontar o componente
-    return () => {
-      window.removeEventListener("cryptoListUpdated", handleStorageUpdate);
-    };
+    fetchCryptoData();
   }, []);
 
   return (
-    <div className="text-white text-[12px]">
-      <h1 className="py-2 flex flex-row items-center">
-        <Star height={16} /> Meus favoritos
-      </h1>
-      <div>
-        <Carousel className="w-full max-w-sm">
-          <CarouselContent className="ml-.5 gap-4">
-            {cryptoList.length > 0 ? (
-              cryptoList.map((crypto, index) => (
-                <section key={index}>
-                  <Box
-                    index={index}
-                    image={crypto.image}
-                    name={crypto.name}
-                    price={crypto.price.toFixed(4)}
-                    variant={crypto.variant}
-                  />
-                </section>
-              ))
-            ) : (
-              <p>Nenhuma criptomoeda favoritada foi encontrada.</p>
-            )}
-          </CarouselContent>
-        </Carousel>
+    <div className="text-white text-[12px] mt-2">
+      <div className="py-2 flex flex-row items-center justify-between">
+     <div className="flex flex-row gap-1 items-center">
+     <Star
+          fill="true"
+          className="fill-yellow-500 mr-1"
+          color="#fbbf24"
+          size={16}
+          strokeWidth={1}
+        />
+        <span className="mt-[2px]">Meus favoritos</span>
+     </div>
+       <div className="flex flex-row gap-2">
+       <span className="bg-[#d5ff58] py-1.5 px-2.5 text-md text-black rounded-md">1d</span>
+       <span className="bg-[#252525] py-1.5 px-2.5 text-md rounded-md">7d</span>
+       <span className="bg-[#252525] py-1.5 px-2.5 text-md rounded-md">30d</span>
+       </div>
+      </div>
+      <div className="max-h-[26rem] min-h-[26rem] overflow-auto">
+        {cryptoList.length > 0 ? (
+          cryptoList.map((crypto, index) => (
+            <section key={index}>
+              <Box
+                index={index}
+                image={crypto.image}
+                name={crypto.name}
+                price={crypto.price.toFixed(5)}
+                variant={parseFloat(crypto.variant).toFixed(2)}
+                onRemove={handleRemove}
+              />
+            </section>
+          ))
+        ) : (
+          <div className="flex flex-row h-[4rem] w-full bg-[#252525] items-center justify-between p-4 rounded-md mb-3 cursor-pointer">
+            <span className="text-white/55 text-[14px]">
+              Nenhuma criptomoeda foi encontrada
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

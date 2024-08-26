@@ -1,4 +1,4 @@
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Trash } from "lucide-react";
 
 interface PropsBox {
   name?: string;
@@ -6,39 +6,55 @@ interface PropsBox {
   variant?: string;
   price?: string;
   index: number;
+  onRemove: (index: number) => void; // Adicione a função onRemove como propriedade
 }
 
-export const Box = ({ name, image, variant, price, index }: PropsBox) => {
-  const isPositive = variant && parseFloat(variant.replace(',', '.')) > 0;
-  const formattedVariant = variant?.replace('.', ',');
+export const Box = ({ name = "", image, variant, price, index, onRemove }: PropsBox) => {
+  const isPositive = variant && parseFloat(variant.replace(",", ".")) > 0;
+  const formattedVariant = variant?.replace(".", ",");
 
+  const truncatedName = name.length > 5 ? `${name.slice(0, 5)}...` : name;
 
-  const cardBackground = index === 0 ? 'bg-[#C9EF52]' : 'bg-[#252525]';
-  const textColor = index === 0 ? 'text-black' : 'text-white';
-  const variantColor = index === 0 ? (isPositive ? 'text-black' : 'text-red-500') : (isPositive ? 'text-green-500' : 'text-red-500');
+  const cardBackground = index === 0 ? "bg-[#252525]" : "bg-[#252525]";
+  const textColor = index === 0 ? "text-white" : "text-white";
+  const variantColor =
+    index === 0
+      ? isPositive
+        ? "text-green-500"
+        : "text-red-500"
+      : isPositive
+      ? "text-green-500"
+      : "text-red-500";
 
   return (
-    <div className={`${cardBackground} ${textColor} w-[220px] h-[125px] p-4 rounded-3xl`}>
-      <section className="flex flex-row gap-2 w-full items-center">
-        <img src={image} alt={name} className="rounded-full w-8" />
+    <div
+      className={`${cardBackground} ${textColor} w-full p-2 rounded-lg grid grid-cols-[1.2fr_1fr_1fr_auto] gap-2 items-center mb-1.5`}
+    >
+      <section className="flex items-center gap-2">
+        <img src={image} alt={name} className="rounded-full w-8 h-8" />
         <div className="flex flex-col">
-          <h1 className="text-[16px] font-medium uppercase">{name}</h1>
+          <h1 className="text-md font-medium uppercase">{truncatedName}</h1>
         </div>
       </section>
-      <span className="text-[32px]">
-        <strong>${price}</strong>
-      </span>
-      <div className={`flex flex-row gap-0 items-center ${variantColor}`}>
+      <div className="flex items-center ml-2">
+        <span className="text-md font-bold">${price}</span>
+      </div>
+      <div className={`flex items-center gap-1 ${variantColor}`}>
         {isPositive ? (
           <ChevronUp className="mb-0.5" height={15} />
         ) : (
           <ChevronDown className="mb-0.5" height={15} />
         )}
-        <span className="text-md font-semibold flex flex-row items-baseline">
-          {formattedVariant}
-          <span className="align-bottom text-md font-semibold">
-            % <span className="text-md">(1d)</span>
-          </span>
+        <span className="text-md font-semibold flex items-baseline w-[80px]">
+          {formattedVariant}% (1d)
+        </span>
+      </div>
+      <div className="flex items-center justify-center w-5 ">
+        <span>
+          <Trash
+            className="text-[10px] p-1.5 text-white/65 cursor-pointer rounded-md hover:text-red-500"
+            onClick={() => onRemove(index)} // Chama a função onRemove com o índice
+          />
         </span>
       </div>
     </div>

@@ -32,10 +32,13 @@ export const Listing = ({ name, tag, price, image, variant }: ListingProps) => {
 
   const handleFavoriteClick = () => {
     const favoritedCoins = JSON.parse(localStorage.getItem("favoritedCoins") || "[]");
-
+    // toast({
+    //   description: <Check size={14} color="#D5FB3D" />,
+    // })
     if (isFavorited) {
       const updatedCoins = favoritedCoins.filter((coin: Data) => coin.tag !== tag);
       localStorage.setItem("favoritedCoins", JSON.stringify(updatedCoins));
+     
     } else {
       favoritedCoins.push({ name, tag, price, image, variant });
       localStorage.setItem("favoritedCoins", JSON.stringify(favoritedCoins));
@@ -43,7 +46,6 @@ export const Listing = ({ name, tag, price, image, variant }: ListingProps) => {
 
     setIsFavorited((prev) => !prev);
 
-    // Emite um evento personalizado para atualizar outros componentes
     const event = new Event("cryptoListUpdated");
     window.dispatchEvent(event);
   };
@@ -52,7 +54,7 @@ export const Listing = ({ name, tag, price, image, variant }: ListingProps) => {
     <section
       onClick={handleFavoriteClick}
       className={`${
-        isFavorited && "border-yellow-300 border"
+        isFavorited && ""
       } flex flex-row w-full bg-[#252525] items-center justify-between p-2 rounded-md mb-3 cursor-pointer`}
     >
       <div className="flex flex-row gap-2 w-[8rem] items-center">
