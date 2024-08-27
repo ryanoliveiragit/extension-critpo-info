@@ -2,53 +2,43 @@ import { useState, useEffect } from "react";
 import { Box } from "./box/box";
 import { Star } from "lucide-react";
 import { getCryptoData } from "@/api/get-tickets-id";
-
-interface FavoritedCryptos {
-  name: string;
-  image: string;
-  price: number;
-  variant: string;
+import { CriptoResponseAPI } from "@/@types/cripto-data";
+interface localStorageType {
   tag: string;
 }
 
 function CryptoComponent() {
-  const [cryptoList, setCryptoList] = useState<FavoritedCryptos[]>([]);
+  const [cryptoList, setCryptoList] = useState<CriptoResponseAPI[]>([]);
+  const [symbols, setSymbols] = useState<string[]>([]); 
 
   const loadSavedCryptos = () => {
     const savedCryptos = localStorage.getItem("favoritedCoins");
     if (savedCryptos) {
-      return JSON.parse(savedCryptos) as FavoritedCryptos[];
+      const parsedCryptos: localStorageType[] = JSON.parse(savedCryptos);
+      const symbolsOnly = parsedCryptos.map((crypto) => crypto.tag);
+      setSymbols(symbolsOnly);
     }
-    return [];
   };
 
   const handleRemove = (index: number) => {
     const updatedList = cryptoList.filter((_, i) => i !== index);
     setCryptoList(updatedList);
-    localStorage.setItem("favoritedCoins", JSON.stringify(updatedList));
+    const updatedSymbols = updatedList.map((crypto) => ({ tag: crypto.symbol }));
+    localStorage.setItem("favoritedCoins", JSON.stringify(updatedSymbols));
     window.dispatchEvent(new Event("cryptoListUpdated"));
   };
 
   useEffect(() => {
+    loadSavedCryptos();
+  }, []);
+
+  useEffect(() => {
     const fetchCryptoData = async () => {
-      const savedCryptos = loadSavedCryptos();
-
-      if (savedCryptos.length > 0) {
+      if (symbols.length > 0) { 
         try {
-          const tags = savedCryptos.map((crypto) => crypto.tag).join(",");
+          const tags = symbols.join(",");
           const response = await getCryptoData(tags);
-
-          const updatedList = savedCryptos.map((crypto) => {
-            const apiData = response.data[crypto.tag];
-
-            return {
-              ...crypto,
-              price: apiData?.quote?.USD.price ?? crypto.price,
-              variant: apiData?.quote?.USD.percent_change_24h.toFixed(2) ?? crypto.variant,
-            };
-          });
-
-          setCryptoList(updatedList);
+          setCryptoList(response);
         } catch (error) {
           console.error("Erro ao buscar os dados das criptos:", error);
         }
@@ -56,7 +46,7 @@ function CryptoComponent() {
     };
 
     fetchCryptoData();
-  }, []);
+  }, [symbols]); // Reexecuta a busca se os símbolos mudarem
 
   return (
     <div className="text-white text-[12px] mt-2">
@@ -85,8 +75,9 @@ function CryptoComponent() {
                 index={index}
                 image={crypto.image}
                 name={crypto.name}
-                price={crypto.price.toFixed(5)}
-                variant={crypto.variant}
+                tag={crypto.symbol}
+                price={crypto.price_usd}
+                variant={crypto.percent_change_24h.toString()}
                 onRemove={handleRemove}
               />
             </section>

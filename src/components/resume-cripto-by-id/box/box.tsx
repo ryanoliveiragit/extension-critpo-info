@@ -1,20 +1,27 @@
 import { ChevronUp, ChevronDown, Trash } from "lucide-react";
 
 interface PropsBox {
-  name?: string;
+  name: string;
+  tag: string;
   image?: string;
-  variant?: string;
-  price?: string;
+  price: number;
+  variant: string;
   index: number;
-  onRemove: (index: number) => void; // Adicione a função onRemove como propriedade
+  onRemove: (index: number) => void;
 }
 
-export const Box = ({ name = "", image, variant, price, index, onRemove }: PropsBox) => {
+export const Box = ({ name = "", image, variant, price, tag, index, onRemove }: PropsBox) => {
   const isPositive = variant && parseFloat(variant.replace(",", ".")) > 0;
-  const formattedVariant = variant?.replace(".", ",");
+  const truncatedPrice = price.toFixed(6).slice(0, 6);
+  const formattedPrice = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6
+  }).format(Number(truncatedPrice));
 
   const truncatedName = name.length > 5 ? `${name.slice(0, 5)}...` : name;
-
+  const formattedVariant = parseFloat(variant).toFixed(2).replace(".", ",");
   const cardBackground = index === 0 ? "bg-[#252525]" : "bg-[#252525]";
   const textColor = index === 0 ? "text-white" : "text-white";
   const variantColor =
@@ -33,11 +40,12 @@ export const Box = ({ name = "", image, variant, price, index, onRemove }: Props
       <section className="flex items-center gap-2">
         <img src={image} alt={name} className="rounded-full w-8 h-8" />
         <div className="flex flex-col">
-          <h1 className="text-md font-medium uppercase">{truncatedName}</h1>
+          <h1 className="text-md font-medium uppercase">{tag}</h1>
+          <h1 className="text-md uppercase text-[10px]  text-white/65 font-normal">{truncatedName}</h1>
         </div>
       </section>
       <div className="flex items-center ml-2">
-        <span className="text-md font-bold">${price}</span>
+        <span className="text-md font-bold">{formattedPrice}</span>
       </div>
       <div className={`flex items-center gap-1 ${variantColor}`}>
         {isPositive ? (

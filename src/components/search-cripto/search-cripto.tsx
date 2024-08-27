@@ -8,9 +8,12 @@ import { Listing } from "../resume-cripto-by-id/listing/listing";
 import { Skeleton } from "../ui/skeleton";
 import { CriptoResponseAPI } from "@/@types/cripto-data";
 
+// Atualizando a tipagem para lidar com um array de criptomoedas
+type CriptoResponseArray = CriptoResponseAPI[];
+
 export const SearchCripto = () => {
   const [selectCripto, setSelectCripto] = useState("BTC");
-  const [cryptoData, setCryptoData] = useState<CriptoResponseAPI | null>(null);
+  const [cryptoData, setCryptoData] = useState<CriptoResponseArray | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchCooldown, setSearchCooldown] = useState(0);
 
@@ -22,9 +25,9 @@ export const SearchCripto = () => {
 
     try {
       console.log("Iniciando busca de criptomoedas...");
-      const response = await axiosInstance.get<CriptoResponseAPI>("/consulta-cripto", {
+      const response = await axiosInstance.get<CriptoResponseArray>("/consulta-cripto", {
         params: {
-          symbol: selectCripto,
+          symbol: selectCripto, // Pode enviar múltiplos símbolos separados por vírgula: "BTC,ETH,DOGE"
         },
       });
       console.log("Resposta da lista de criptomoedas:", response.data);
@@ -55,10 +58,10 @@ export const SearchCripto = () => {
       <section className="flex mt-4 flex-row gap-2 items-center justify-start">
         <div className="flex flex-row gap-2">
           <Input
-            placeholder="DOG..."
+            placeholder="BTC, ETH, DOGE..."
             value={selectCripto}
             onChange={(e) => setSelectCripto(e.target.value.toUpperCase())}
-            className="bg-[#252525] w-[113px] border-none placeholder:text-gray-400 text-white focus:text-white"
+            className="bg-[#252525] w-[110px] border-none placeholder:text-gray-400 text-white focus:text-white"
           />
           <Button
             disabled={isButtonDisabled || selectCripto === ""}
@@ -83,14 +86,17 @@ export const SearchCripto = () => {
           </div>
         ) : (
           <div className="max-h-[27rem] overflow-auto">
-            {cryptoData ? (
-              <Listing
-                variant={cryptoData.percent_change_24h.toString()}
-                image={cryptoData.image}
-                name={cryptoData.name}
-                price={cryptoData.price_usd}
-                tag={cryptoData.symbol}
-              />
+            {cryptoData && cryptoData.length > 0 ? (
+              cryptoData.map((crypto) => (
+                <Listing
+                  key={crypto.symbol}
+                  variant={crypto.percent_change_24h.toString()}
+                  image={crypto.image}
+                  name={crypto.name}
+                  price={crypto.price_usd}
+                  tag={crypto.symbol}
+                />
+              ))
             ) : (
               <div className="flex flex-row h-[4rem] w-full bg-[#252525] items-center justify-between p-4 rounded-md mb-3 cursor-pointer">
                 <span className="text-white/55 text-[14px]">Nenhuma criptomoeda foi encontrada</span>
