@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Box } from "./box/box";
 import { Star } from "lucide-react";
 import { getCryptoData } from "@/api/get-tickets-id";
+
 interface FavoritedCryptos {
   name: string;
   image: string;
@@ -12,6 +13,7 @@ interface FavoritedCryptos {
 
 function CryptoComponent() {
   const [cryptoList, setCryptoList] = useState<FavoritedCryptos[]>([]);
+
   const loadSavedCryptos = () => {
     const savedCryptos = localStorage.getItem("favoritedCoins");
     if (savedCryptos) {
@@ -32,25 +34,24 @@ function CryptoComponent() {
       const savedCryptos = loadSavedCryptos();
 
       if (savedCryptos.length > 0) {
-        const updatedList = await Promise.all(
-          savedCryptos.map(async (crypto) => {
-            try {
-              const response = await getCryptoData(crypto.tag);
-              const apiData = response.data[crypto.tag];
+        try {
+          const tags = savedCryptos.map((crypto) => crypto.tag).join(",");
+          const response = await getCryptoData(tags);
 
-              return {
-                ...crypto,
-                price: apiData?.quote?.USD.price ?? crypto.price,
-                variant: apiData?.quote?.USD.percent_change_24h.toFixed(2) ?? crypto.variant,
-              };
-            } catch (error) {
-              console.error(`Erro ao buscar dados para ${crypto.tag}:`, error);
-              return crypto;
-            }
-          })
-        );
+          const updatedList = savedCryptos.map((crypto) => {
+            const apiData = response.data[crypto.tag];
 
-        setCryptoList(updatedList);
+            return {
+              ...crypto,
+              price: apiData?.quote?.USD.price ?? crypto.price,
+              variant: apiData?.quote?.USD.percent_change_24h.toFixed(2) ?? crypto.variant,
+            };
+          });
+
+          setCryptoList(updatedList);
+        } catch (error) {
+          console.error("Erro ao buscar os dados das criptos:", error);
+        }
       }
     };
 
@@ -60,21 +61,21 @@ function CryptoComponent() {
   return (
     <div className="text-white text-[12px] mt-2">
       <div className="py-2 flex flex-row items-center justify-between">
-     <div className="flex flex-row gap-1 items-center">
-     <Star
-          fill="true"
-          className="fill-yellow-500 mr-1"
-          color="#fbbf24"
-          size={16}
-          strokeWidth={1}
-        />
-        <span className="mt-[2px]">Meus favoritos</span>
-     </div>
-       <div className="flex flex-row gap-2">
-       <span className="bg-[#d5ff58] py-1.5 px-2.5 text-md text-black rounded-md">1d</span>
-       <span className="bg-[#252525] py-1.5 px-2.5 text-md rounded-md">7d</span>
-       <span className="bg-[#252525] py-1.5 px-2.5 text-md rounded-md">30d</span>
-       </div>
+        <div className="flex flex-row gap-1 items-center">
+          <Star
+            fill="true"
+            className="fill-yellow-500 mr-1"
+            color="#fbbf24"
+            size={16}
+            strokeWidth={1}
+          />
+          <span className="mt-[2px]">Meus favoritos</span>
+        </div>
+        <div className="flex flex-row gap-2">
+          <span className="bg-[#d5ff58] py-1.5 px-2.5 text-md text-black rounded-md">1d</span>
+          <span className="bg-[#252525] py-1.5 px-2.5 text-md rounded-md">7d</span>
+          <span className="bg-[#252525] py-1.5 px-2.5 text-md rounded-md">30d</span>
+        </div>
       </div>
       <div className="max-h-[26rem] min-h-[26rem] overflow-auto">
         {cryptoList.length > 0 ? (
@@ -85,7 +86,7 @@ function CryptoComponent() {
                 image={crypto.image}
                 name={crypto.name}
                 price={crypto.price.toFixed(5)}
-                variant={parseFloat(crypto.variant).toFixed(2)}
+                variant={crypto.variant}
                 onRemove={handleRemove}
               />
             </section>

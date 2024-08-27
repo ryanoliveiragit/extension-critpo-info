@@ -1,13 +1,5 @@
-"use client";
-import { useEffect, useState } from "react";
-import {
-  ChevronUp,
-  ChevronDown,
-  TrendingUp,
-  TrendingDown,
-  Star,
-} from "lucide-react";
-import { Data } from "@/@types/crypto-data";
+import { useState, useEffect } from "react";
+import { ChevronUp, ChevronDown, TrendingUp, TrendingDown, Star } from "lucide-react";
 
 interface ListingProps {
   name: string;
@@ -20,25 +12,31 @@ interface ListingProps {
 export const Listing = ({ name, tag, price, image, variant }: ListingProps) => {
   const [isFavorited, setIsFavorited] = useState(false);
 
-  const formattedVariant = variant?.replace(".", ",");
-  const truncatedName = name.length > 20 ? `${name.slice(0, 7)}...` : name;
+  const truncatedPrice = price.toFixed(6).slice(0, 6);
+
+  const formattedPrice = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6
+  }).format(Number(truncatedPrice));
+
+  const formattedVariant = parseFloat(variant).toFixed(2).replace(".", ",");
+
   const isNegative = parseFloat(variant) < 0;
+  const truncatedName = name.length > 20 ? `${name.slice(0, 7)}...` : name;
 
   useEffect(() => {
     const favoritedCoins = JSON.parse(localStorage.getItem("favoritedCoins") || "[]");
-    const isCoinFavorited = favoritedCoins.some((coin: Data) => coin.tag === tag);
+    const isCoinFavorited = favoritedCoins.some((coin: { tag: string }) => coin.tag === tag);
     setIsFavorited(isCoinFavorited);
   }, [tag]);
 
   const handleFavoriteClick = () => {
     const favoritedCoins = JSON.parse(localStorage.getItem("favoritedCoins") || "[]");
-    // toast({
-    //   description: <Check size={14} color="#D5FB3D" />,
-    // })
     if (isFavorited) {
-      const updatedCoins = favoritedCoins.filter((coin: Data) => coin.tag !== tag);
+      const updatedCoins = favoritedCoins.filter((coin: { tag: string }) => coin.tag !== tag);
       localStorage.setItem("favoritedCoins", JSON.stringify(updatedCoins));
-     
     } else {
       favoritedCoins.push({ name, tag, price, image, variant });
       localStorage.setItem("favoritedCoins", JSON.stringify(favoritedCoins));
@@ -54,11 +52,11 @@ export const Listing = ({ name, tag, price, image, variant }: ListingProps) => {
     <section
       onClick={handleFavoriteClick}
       className={`${
-        isFavorited && ""
+        isFavorited ? "bg-[#333333]" : ""
       } flex flex-row w-full bg-[#252525] items-center justify-between p-2 rounded-md mb-3 cursor-pointer`}
     >
       <div className="flex flex-row gap-2 w-[8rem] items-center">
-        <img src={image} alt="" className="w-8 rounded-full" />
+        <img src={image} alt={name} className="w-8 rounded-full" />
         <div className="flex flex-col">
           <p className="text-sm font-bold -mb-1">{tag}</p>
           <h1 className="text-[14px] text-white/65 font-normal">
@@ -76,7 +74,7 @@ export const Listing = ({ name, tag, price, image, variant }: ListingProps) => {
       </div>
 
       <div className="flex flex-col gap-1 justify-end items-end">
-        <span className="font-semibold">${price.toFixed(4)}</span>
+        <span className="font-semibold">{formattedPrice}</span>
         <div className="flex flex-row gap-0 items-center">
           {isNegative ? (
             <ChevronDown className="mb-.5 text-[#ea3943]" height={15} />
@@ -90,7 +88,7 @@ export const Listing = ({ name, tag, price, image, variant }: ListingProps) => {
           >
             <span className="font-normal"> {formattedVariant}</span>
             <span className="align-bottom text-sm">
-              % <span className="text-md">(1d)</span>
+              % <span className="text-md">(1h)</span>
             </span>
           </span>
         </div>
