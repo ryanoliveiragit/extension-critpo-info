@@ -1,5 +1,4 @@
-import { ChevronUp, ChevronDown, Trash } from "lucide-react";
-
+import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 interface PropsBox {
   name: string;
   tag: string;
@@ -7,63 +6,49 @@ interface PropsBox {
   price: number;
   variant: string;
   index: number;
+  percentage: string;
   onRemove: (index: number) => void;
 }
 
-export const Box = ({ name = "", image, variant, price, tag, index, onRemove }: PropsBox) => {
+export const Box = ({ name = "", image, variant, price, tag }: PropsBox) => {
   const isPositive = variant && parseFloat(variant.replace(",", ".")) > 0;
   const truncatedPrice = price.toFixed(6).slice(0, 6);
-  const formattedPrice = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const formattedPrice = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 2,
-    maximumFractionDigits: 6
+    maximumFractionDigits: 6,
   }).format(Number(truncatedPrice));
 
-  const truncatedName = name.length > 5 ? `${name.slice(0, 5)}...` : name;
+  const truncatedName = name.length > 16 ? `${name.slice(0, 16)}...` : name;
   const formattedVariant = parseFloat(variant).toFixed(2).replace(".", ",");
-  const cardBackground = index === 0 ? "bg-[#252525]" : "bg-[#252525]";
-  const textColor = index === 0 ? "text-white" : "text-white";
-  const variantColor =
-    index === 0
-      ? isPositive
-        ? "text-green-500"
-        : "text-red-500"
-      : isPositive
-      ? "text-green-500"
-      : "text-red-500";
+  const variantColor = isPositive ? "text-green-400" : "text-red-400";
 
   return (
-    <div
-      className={`${cardBackground} ${textColor} w-full p-2 rounded-lg grid grid-cols-[1.2fr_1fr_1fr_auto] gap-2 items-center mb-1.5`}
-    >
+    <div className="flex items-center justify-between  text-white hover:bg-white/5 p-2 rounded-lg w-full gap-2 mb-1.5">
       <section className="flex items-center gap-2">
-        <img src={image} alt={name} className="rounded-full w-8 h-8" />
+        <img src={image} alt={name} className="rounded-full w-10 h-10" />
         <div className="flex flex-col">
           <h1 className="text-md font-medium uppercase">{tag}</h1>
-          <h1 className="text-md uppercase text-[10px]  text-white/65 font-normal">{truncatedName}</h1>
+          <h1 className="text-md  text-[12px] text-white/75 font-normal">
+            {truncatedName}
+          </h1>
         </div>
       </section>
-      <div className="flex items-center ml-2">
-        <span className="text-md font-bold">{formattedPrice}</span>
-      </div>
-      <div className={`flex items-center gap-1 ${variantColor}`}>
-        {isPositive ? (
-          <ChevronUp className="mb-0.5" height={15} />
-        ) : (
-          <ChevronDown className="mb-0.5" height={15} />
-        )}
-        <span className="text-md font-semibold flex items-baseline w-[80px]">
-          {formattedVariant}% (1d)
-        </span>
-      </div>
-      <div className="flex items-center justify-center w-5 ">
-        <span>
-          <Trash
-            className="text-[10px] p-1.5 text-white/65 cursor-pointer rounded-md hover:text-red-500"
-            onClick={() => onRemove(index)} // Chama a função onRemove com o índice
-          />
-        </span>
+
+
+      <div className="flex flex-col items-end">
+        <div className="flex-1 flex justify-center">
+          <span className="text-[16px] font-medium text-white">
+            {formattedPrice}
+          </span>
+        </div>
+        <div className={`flex items-center gap-1 ${variantColor}`}>
+          {isPositive ? <IoMdArrowDropup size={15} /> : <IoMdArrowDropdown size={15} />}
+          <span className="text-[12px] font-semibold flex items-baseline">
+            {formattedVariant}%
+          </span>
+        </div>
       </div>
     </div>
   );

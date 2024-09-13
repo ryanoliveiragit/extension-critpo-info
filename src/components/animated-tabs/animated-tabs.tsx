@@ -1,4 +1,3 @@
-// @NOTE: in case you are using Next.js
 "use client";
 
 import { useState } from "react";
@@ -11,23 +10,27 @@ type AnimatedTabsProps = {
   containerClassName?: string;
   activeTabClassName?: string;
   tabClassName?: string;
+  onChange?: (index: number) => void;
 };
 
 export function AnimatedTabs({
   containerClassName,
   activeTabClassName,
   tabClassName,
+  onChange,
 }: AnimatedTabsProps) {
   const [activeIdx, setActiveIdx] = useState<number>(0);
 
   const tabs = [
-    {
-      title: "Todos",
-    },
-    {
-      title: "Runes",
-    },
+    { title: "1h" },
+    { title: "24h" },
+    { title: "7d" },
   ];
+
+  const handleTabClick = (index: number) => {
+    setActiveIdx(index);
+    if (onChange) onChange(index); // Trigger the onChange function if provided
+  };
 
   return (
     <div
@@ -39,7 +42,7 @@ export function AnimatedTabs({
       {tabs.map((tab, index) => (
         <button
           key={tab.title}
-          onClick={() => setActiveIdx(index)}
+          onClick={() => handleTabClick(index)}
           className={cn(
             "group relative z-[1] rounded-full px-4 py-2",
             { "z-0": activeIdx === index },
@@ -51,7 +54,7 @@ export function AnimatedTabs({
               layoutId="clicked-button"
               transition={{ duration: 0.2 }}
               className={cn(
-                "absolute inset-0 rounded-full bg-white",
+                "absolute inset-0 rounded-full bg-white/10",
                 activeTabClassName
               )}
             />
@@ -59,8 +62,8 @@ export function AnimatedTabs({
 
           <span
             className={cn(
-              "relative text-sm block font-medium duration-200",
-              activeIdx === index ? "text-black delay-100" : "text-white"
+              "relative text-[14px] block font-normal duration-200",
+              activeIdx === index ? "text-white delay-100 font-medium" : "text-white/70"
             )}
           >
             {tab.title}

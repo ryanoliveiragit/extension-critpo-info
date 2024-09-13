@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
-import { AnimatedTabs } from "../animated-tabs/animated-tabs";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import axiosInstance from "@/api/instance";
@@ -8,7 +7,6 @@ import { Listing } from "../resume-cripto-by-id/listing/listing";
 import { Skeleton } from "../ui/skeleton";
 import { CriptoResponseAPI } from "@/@types/cripto-data";
 
-// Atualizando a tipagem para lidar com um array de criptomoedas
 type CriptoResponseArray = CriptoResponseAPI[];
 
 export const SearchCripto = () => {
@@ -22,12 +20,12 @@ export const SearchCripto = () => {
 
     setIsSearching(true);
     setSearchCooldown(3);
-
+    
     try {
       console.log("Iniciando busca de criptomoedas...");
       const response = await axiosInstance.get<CriptoResponseArray>("/consulta-cripto", {
         params: {
-          symbol: selectCripto, // Pode enviar múltiplos símbolos separados por vírgula: "BTC,ETH,DOGE"
+          symbol: selectCripto,
         },
       });
       console.log("Resposta da lista de criptomoedas:", response.data);
@@ -56,22 +54,22 @@ export const SearchCripto = () => {
   return (
     <div>
       <section className="flex mt-4 flex-row gap-2 items-center justify-start">
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row gap-2 justify-between w-full">
           <Input
             placeholder="BTC, ETH, DOGE..."
             value={selectCripto}
             onChange={(e) => setSelectCripto(e.target.value.toUpperCase())}
-            className="bg-[#252525] w-[110px] border-none placeholder:text-gray-400 text-white focus:text-white"
+            className="bg-[#252525] w-full border-none placeholder:text-gray-400 text-white focus:text-white"
           />
           <Button
             disabled={isButtonDisabled || selectCripto === ""}
             onClick={handleSearchCripto}
-            className="bg-[#d5ff58] text-black"
+            className="bg-[#fffffe] text-black"
           >
             {searchCooldown ? searchCooldown : <Search width={18} />}
           </Button>
         </div>
-        <AnimatedTabs />
+
       </section>
       <hr className="h-[1px] bg-white/10 border-0 my-2" />
       <div className="text-white mt-1">

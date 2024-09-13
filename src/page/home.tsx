@@ -3,7 +3,7 @@ import CryptoComponent from "@/components/resume-cripto-by-id/resume-cripto-by-i
 
 export default function Home() {
   return (
-    <section className="bg-[#121212] ">
+    <section>
       <CryptoComponent />
     </section>
   );

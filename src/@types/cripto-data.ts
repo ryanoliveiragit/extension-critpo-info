@@ -8,6 +8,9 @@ export interface CriptoResponseAPI {
     price_last_7d: number;
     price_last_24h: number;
     price_usd: number;
+    total_supply: number;
+    max_supply: number;
+    link: string;
     symbol: string;
   }
   
